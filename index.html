@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0c0f" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>SocialFlow — Agency Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- ═══ SIDEBAR ═══ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <div class="logo-icon">ZC</div>
+      <div class="logo-text-wrap">
+        <div class="logo-text">LOGO</div>
+        <div class="logo-sub">Zonovva Creative</div>
+      </div>
+      <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
+    </div>
+
+    <div class="sidebar-scroll">
+      <nav class="nav-section">
+        <div class="nav-label">Main</div>
+        <div class="nav-item active" data-view="dashboard" onclick="setView('dashboard',this)">
+          <span class="nav-icon">⬡</span><span class="nav-text">Dashboard</span>
+        </div>
+        <div class="nav-item" data-view="calendar" onclick="setView('calendar',this)">
+          <span class="nav-icon">◈</span><span class="nav-text">Content Calendar</span>
+        </div>
+        <div class="nav-item" data-view="planner" onclick="setView('planner',this)">
+          <span class="nav-icon">✦</span><span class="nav-text">Post Planner</span>
+          <span class="nav-badge yellow nav-text" id="planner-badge">3</span>
+        </div>
+        <div class="nav-item" data-view="approvals" onclick="setView('approvals',this)">
+          <span class="nav-icon">◎</span><span class="nav-text">Approvals</span>
+          <span class="nav-badge nav-text" id="approval-badge">2</span>
+        </div>
+      </nav>
+
+      <nav class="nav-section">
+        <div class="nav-label">Insights</div>
+        <div class="nav-item" data-view="analytics" onclick="setView('analytics',this)">
+          <span class="nav-icon">◉</span><span class="nav-text">Analytics</span>
+        </div>
+        <div class="nav-item" data-view="report" onclick="setView('report',this)">
+          <span class="nav-icon">▦</span><span class="nav-text">Monthly Report</span>
+          <span class="nav-badge green nav-text">New</span>
+        </div>
+      </nav>
+
+      <nav class="nav-section">
+        <div class="nav-label">Workspace</div>
+        <div class="nav-item" data-view="team" onclick="setView('team',this)">
+          <span class="nav-icon">◎</span><span class="nav-text">Team & Tasks</span>
+        </div>
+        <div class="nav-item" data-view="docs" onclick="setView('docs',this)">
+          <span class="nav-icon">▣</span><span class="nav-text">Documents</span>
+        </div>
+        <div class="nav-item" data-view="whatsapp" onclick="setView('whatsapp',this)">
+          <span class="nav-icon">✉</span><span class="nav-text">WhatsApp Bot</span>
+        </div>
+        <div class="nav-item" data-view="clientportal" onclick="setView('clientportal',this)">
+          <span class="nav-icon">▢</span><span class="nav-text">Client Portal</span>
+        </div>
+      </nav>
+
+      <nav class="nav-section">
+        <div class="nav-label">Config</div>
+        <div class="nav-item" data-view="settings" onclick="setView('settings',this)">
+          <span class="nav-icon">⚙</span><span class="nav-text">Settings</span>
+        </div>
+      </nav>
+
+      <!-- CLIENT LIST -->
+      <div class="client-section">
+        <div class="client-header">
+          <span class="nav-label" style="padding:0">Clients</span>
+          <button class="client-add-btn nav-text" onclick="openModal('addClient')">+</button>
+        </div>
+        <div id="client-list"></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR FOOTER — Theme Toggle -->
+    <div class="sidebar-footer">
+      <div class="theme-toggle-row">
+        <span class="theme-toggle-label nav-text" id="theme-label">🌙 Dark Mode</span>
+        <label class="theme-switch">
+          <input type="checkbox" id="themeToggle" onchange="toggleTheme(this.checked)">
+          <div class="theme-switch-track">
+            <div class="theme-switch-thumb" id="themeThumb">🌙</div>
+          </div>
+        </label>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══ MAIN ═══ -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+        <div>
+          <div class="topbar-title" id="page-title">Dashboard</div>
+          <div class="topbar-sub" id="page-sub">April 2026 · Week 1–2</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <input type="text" class="search-input" placeholder="🔍  Search posts, clients..." id="searchInput" oninput="handleSearch(this.value)">
+        <button class="btn btn-primary" onclick="openModal('addPost')">+ New Post</button>
+        <button class="icon-btn" id="notifBtn" onclick="togglePanel('notif')">
+          🔔<span class="notif-dot" id="notifDot"></span>
+        </button>
+        <button class="avatar-btn" onclick="togglePanel('profile')">TP</button>
+      </div>
+    </header>
+
+    <!-- SEARCH RESULTS -->
+    <div class="search-overlay" id="searchOverlay" style="display:none">
+      <div id="searchResults"></div>
+    </div>
+
+    <!-- CONTENT -->
+    <main class="content-area" id="content-area">
+      <div class="content-inner" id="content-inner"></div>
+    </main>
+  </div>
+
+  <!-- ═══ NOTIFICATION PANEL ═══ -->
+  <div class="float-panel" id="notif-panel">
+    <div class="panel-header">
+      <span>Notifications</span>
+      <button class="btn" onclick="markAllRead()">Mark all read</button>
+    </div>
+    <div id="notif-list"></div>
+  </div>
+
+  <!-- ═══ PROFILE PANEL ═══ -->
+  <div class="float-panel profile-panel" id="profile-panel">
+    <div class="profile-top">
+      <div class="profile-avatar">TP</div>
+      <div class="profile-name">Tejas Patil</div>
+      <div class="profile-role">Agency Owner · SocialFlow</div>
+    </div>
+    <div class="profile-menu">
+      <div class="profile-item" onclick="closePanel()">👤 My Profile</div>
+      <div class="profile-item" onclick="setView('settings');closePanel()">⚙ Settings</div>
+      <div class="profile-item" onclick="closePanel()">🔑 Change Password</div>
+      <div class="profile-item" onclick="closePanel()">📦 Billing & Plans</div>
+      <div class="profile-divider"></div>
+      <div class="profile-item danger" onclick="doLogout()">🚪 Sign Out</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ═══ -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box" id="modal-box"></div>
+</div>
+
+<!-- ═══ TOAST ═══ -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✓</span>
+  <span id="toast-msg"></span>
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
