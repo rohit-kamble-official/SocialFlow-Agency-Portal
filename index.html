@@ -16,17 +16,46 @@
 </head>
 <body>
 <div class="app" id="app">
+<style>
+  .logo-img {
+  width: 120px;
+  height: auto;
+}
 
+/* Show only light logo by default */
+.dark-logo {
+  display: none;
+}
+
+/* When light mode is active */
+[data-theme="light"] .light-logo {
+  display: block;
+}
+[data-theme="light"] .dark-logo {
+  display: none;
+}
+
+/* When dark mode is active */
+[data-theme="dark"] .light-logo {
+  display: none;
+}
+[data-theme="dark"] .dark-logo {
+  display: block;
+}
+
+</style>
   <!-- ═══ SIDEBAR ═══ -->
   <aside class="sidebar" id="sidebar">
     <div class="logo">
-      <div class="logo-icon">ZC</div>
-      <div class="logo-text-wrap">
-        <div class="logo-text">LOGO</div>
-        <div class="logo-sub">Zonovva Creative</div>
-      </div>
-      <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
-    </div>
+  <!-- Light Logo -->
+  <img src="LOGO FOR Light.png" class="logo-img light-logo">
+
+  <!-- Dark Logo -->
+  <img src="logo (1).png" class="logo-img dark-logo">
+
+  <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
+</div>
+      
 
     <div class="sidebar-scroll">
       <nav class="nav-section">
@@ -48,30 +77,11 @@
       </nav>
 
       <nav class="nav-section">
-        <div class="nav-label">Insights</div>
-        <div class="nav-item" data-view="analytics" onclick="setView('analytics',this)">
-          <span class="nav-icon">◉</span><span class="nav-text">Analytics</span>
-        </div>
-        <div class="nav-item" data-view="report" onclick="setView('report',this)">
-          <span class="nav-icon">▦</span><span class="nav-text">Monthly Report</span>
-          <span class="nav-badge green nav-text">New</span>
-        </div>
+       
       </nav>
 
       <nav class="nav-section">
-        <div class="nav-label">Workspace</div>
-        <div class="nav-item" data-view="team" onclick="setView('team',this)">
-          <span class="nav-icon">◎</span><span class="nav-text">Team & Tasks</span>
-        </div>
-        <div class="nav-item" data-view="docs" onclick="setView('docs',this)">
-          <span class="nav-icon">▣</span><span class="nav-text">Documents</span>
-        </div>
-        <div class="nav-item" data-view="whatsapp" onclick="setView('whatsapp',this)">
-          <span class="nav-icon">✉</span><span class="nav-text">WhatsApp Bot</span>
-        </div>
-        <div class="nav-item" data-view="clientportal" onclick="setView('clientportal',this)">
-          <span class="nav-icon">▢</span><span class="nav-text">Client Portal</span>
-        </div>
+     
       </nav>
 
       <nav class="nav-section">
