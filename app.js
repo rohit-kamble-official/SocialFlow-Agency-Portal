@@ -26,6 +26,7 @@ let state = {
   taskFilter: { who: 'all', status: 'all', type: 'all' },
   currentUser: null,
 };
+let editingClientId = null;
 
 /* ═══════════════════════════════════════════════
    INIT
@@ -234,13 +235,23 @@ function closeSidebarMobile() {
 
 function renderClientList() {
   const el = document.getElementById('client-list');
+
   el.innerHTML = DB.clients.map(c => `
     <div class="client-item ${c.id === state.client ? 'selected' : ''}" onclick="selectClient('${c.id}')">
-      <div class="client-avatar" style="background:${c.bg};color:${c.color}">${c.initials}</div>
+
+      <div class="client-avatar" style="background:${c.bg};color:${c.color}">
+        ${c.initials}
+      </div>
+
       <div class="client-info">
         <div class="client-name">${c.name}</div>
         <div class="client-meta">${DB.posts.filter(p => p.client === c.id).length} posts</div>
       </div>
+
+      <!-- EDIT BUTTON -->
+      <button onclick="event.stopPropagation(); openEditClient('${c.id}')" 
+        style="background:none;border:none;color:var(--text3);cursor:pointer;">✏</button>
+
       <div class="client-dot ${c.status === 'Draft' ? 'yellow' : c.status === 'Paused' ? 'red' : ''}"></div>
     </div>
   `).join('');
@@ -516,6 +527,21 @@ function copyCaption(id) {
   }
 }
 
+function deleteClientFromModal() {
+  if (!editingClientId) return;
+
+  if (!confirm("Delete this client?")) return;
+
+  DB.clients = DB.clients.filter(c => c.id !== editingClientId);
+
+  editingClientId = null;
+  saveDB();
+  closeModal();
+  renderClientList();
+
+  showToast('🗑','Client deleted');
+}
+
 function sendForApproval(id) {
   showToast('📲', 'Approval request sent via WhatsApp!');
 }
@@ -556,36 +582,42 @@ function renderDashboard() {
     <div class="stat-card">
       <div class="stat-label">Total Posts</div>
       <div class="stat-value" style="color:var(--accent2)">${cp.length}</div>
-      <div class="stat-delta" style="color:var(--text3)">Week 1–2, April</div>
+      <div class="stat-delta">April Monthly Performance</div>
       <div class="stat-bar"><div class="stat-bar-fill" style="width:${cp.length * 10}%;background:var(--accent)"></div></div>
     </div>
+
     <div class="stat-card">
       <div class="stat-label">Published</div>
       <div class="stat-value" style="color:var(--a3)">${pub}</div>
       <div class="stat-delta" style="color:var(--a3)">↑ ${cp.length ? Math.round(pub/cp.length*100) : 0}% complete</div>
       <div class="stat-bar"><div class="stat-bar-fill" style="width:${cp.length ? pub/cp.length*100 : 0}%;background:var(--a3)"></div></div>
     </div>
+
     <div class="stat-card">
       <div class="stat-label">Scheduled</div>
       <div class="stat-value" style="color:var(--a6)">${sched}</div>
-      <div class="stat-delta" style="color:var(--text3)">Auto-posting on</div>
+      <div class="stat-delta">Auto-posting on</div>
       <div class="stat-bar"><div class="stat-bar-fill" style="width:${cp.length ? sched/cp.length*100 : 0}%;background:var(--a6)"></div></div>
     </div>
+
     <div class="stat-card">
       <div class="stat-label">Pending</div>
       <div class="stat-value" style="color:var(--a4)">${pend}</div>
       <div class="stat-delta" style="color:var(--a4)">Needs attention</div>
       <div class="stat-bar"><div class="stat-bar-fill" style="width:${cp.length ? pend/cp.length*100 : 0}%;background:var(--a4)"></div></div>
     </div>
+
     <div class="stat-card">
       <div class="stat-label">Total Reach</div>
       <div class="stat-value" style="color:var(--a7)">${fmtNum(totalReach)}</div>
-      <div class="stat-delta" style="color:var(--a3)">↑ 18% vs last week</div>
+      <div class="stat-delta" style="color:var(--a3)">↑ 18% vs last month</div>
       <div class="stat-bar"><div class="stat-bar-fill" style="width:70%;background:var(--a7)"></div></div>
     </div>
   </div>
 
   <div style="display:grid;grid-template-columns:1fr 270px;gap:16px">
+
+    <!-- LEFT SIDE -->
     <div>
       <div class="section-header">
         <div class="section-title">Content Plan — ${cl ? cl.name : ''}</div>
@@ -595,33 +627,58 @@ function renderDashboard() {
           ).join('')}
         </div>
       </div>
+
       <div class="posts-list">
-        ${filteredPosts.length ? filteredPosts.map(p => renderPostCard(p)).join('') : '<div class="empty-state"><div class="empty-state-icon">🎉</div>No posts match this filter</div>'}
+        ${filteredPosts.length 
+          ? filteredPosts.map(p => renderPostCard(p)).join('') 
+          : '<div class="empty-state"><div class="empty-state-icon">🎉</div>No posts match this filter</div>'}
       </div>
     </div>
 
+    <!-- RIGHT SIDE -->
     <div>
+
+      <!-- FESTIVALS -->
       <div class="card" style="margin-bottom:10px;padding:14px">
         <div class="stat-label" style="margin-bottom:10px">🗓 April Festivals</div>
         ${DB.festivals.map(f => `
         <div class="info-row">
-          <span style="display:flex;align-items:center;gap:7px"><span style="width:6px;height:6px;border-radius:50%;background:var(--a4);display:inline-block;flex-shrink:0"></span><span style="color:var(--text3);font-size:10px;width:44px;flex-shrink:0">${f.date}</span><span style="font-size:11px">${f.name}</span></span>
+          <span style="display:flex;align-items:center;gap:7px">
+            <span style="width:6px;height:6px;border-radius:50%;background:var(--a4);display:inline-block;"></span>
+            <span style="color:var(--text3);font-size:10px;width:44px;">${f.date}</span>
+            <span style="font-size:11px">${f.name}</span>
+          </span>
         </div>`).join('')}
       </div>
 
+      <!-- 🔥 MONTHLY REPORT -->
       <div class="card" style="padding:14px;margin-bottom:10px">
-        <div class="stat-label" style="margin-bottom:10px">Week Summary</div>
+        <div class="stat-label" style="margin-bottom:10px">📊 Monthly Report</div>
+
         ${[
-          ['Carousels', cp.filter(p=>p.format==='Carousel').length, 'var(--accent2)'],
+          ['Total Posts', cp.length, 'var(--accent2)'],
+          ['Published', pub, 'var(--a3)'],
           ['Reels', cp.filter(p=>p.format==='Reel').length, 'var(--a5)'],
+          ['Carousels', cp.filter(p=>p.format==='Carousel').length, 'var(--accent2)'],
+          ['Total Reach', fmtNum(totalReach), 'var(--a7)'],
           ['Total Saves', totalSaves, 'var(--a3)'],
-          ['Total Shares', cp.reduce((a,p)=>a+p.shares,0), 'var(--a6)'],
-          ['Retainer', '₹' + (DB.clients.find(x=>x.id===state.client)?.retainer||0).toLocaleString(), 'var(--a4)'],
-        ].map(([l,v,c]) => `<div class="info-row"><span class="info-row-label">${l}</span><span style="color:${c};font-weight:600">${v}</span></div>`).join('')}
+          ['Total Shares', cp.reduce((a,p)=>a+p.shares,0), 'var(--a6)']
+        ].map(([l,v,c]) => `
+          <div class="info-row">
+            <span class="info-row-label">${l}</span>
+            <span style="color:${c};font-weight:600">${v}</span>
+          </div>
+        `).join('')}
+
       </div>
 
-      <button class="btn btn-primary btn-full" onclick="openModal('addPost')" style="margin-bottom:7px">+ Add Post</button>
-      <button class="btn btn-full" onclick="setView('calendar')" style="margin-bottom:10px">View Calendar →</button>
+      <button class="btn btn-primary btn-full" onclick="openModal('addPost')" style="margin-bottom:7px">
+        + Add Post
+      </button>
+
+      <button class="btn btn-full" onclick="setView('calendar')" style="margin-bottom:10px">
+        View Calendar →
+      </button>
 
       ${renderInsightsWidget()}
     </div>
@@ -1622,7 +1679,7 @@ function buildAddPostModal() {
     <div class="form-group">
       <label class="form-label">Format</label>
       <select class="form-select" id="f-format">
-        ${['Carousel','Reel','Story','Static Post'].map(f => `<option>${f}</option>`).join('')}
+        ${['Carousel','Reel','Story','Static Post' ,'Ads','Video'].map(f => `<option>${f}</option>`).join('')}
       </select>
     </div>
   </div>
@@ -1848,6 +1905,7 @@ function buildAddClientModal() {
   <div class="modal-title">Add New Client</div>
   <div class="modal-subtitle">Client onboarding — all details and setup</div>
 
+  <!-- ROW 1 -->
   <div class="form-row form-row-cols c2">
     <div class="form-group">
       <label class="form-label">Brand / Client Name</label>
@@ -1859,6 +1917,7 @@ function buildAddClientModal() {
     </div>
   </div>
 
+  <!-- ROW 2 -->
   <div class="form-row form-row-cols c2">
     <div class="form-group">
       <label class="form-label">Contact Name</label>
@@ -1870,6 +1929,7 @@ function buildAddClientModal() {
     </div>
   </div>
 
+  <!-- ROW 3 -->
   <div class="form-row">
     <div class="form-group">
       <label class="form-label">Contact Email</label>
@@ -1877,50 +1937,119 @@ function buildAddClientModal() {
     </div>
   </div>
 
+  <!-- ROW 4 -->
   <div class="form-row form-row-cols c2">
     <div class="form-group">
       <label class="form-label">Monthly Posts Target</label>
       <input type="number" class="form-input" id="ac-posts" placeholder="e.g. 20">
     </div>
+
     <div class="form-group">
-      <label class="form-label">Retainer (₹/month)</label>
-      <input type="text" class="form-input" id="ac-retainer" placeholder="e.g. 25000">
+      <label class="form-label">Client Status</label>
+      <select class="form-select" id="client-status">
+        <option value="Active">🟢 Active</option>
+        <option value="Draft">🟡 Pending</option>
+        <option value="Paused">🔴 Stopped</option>
+      </select>
     </div>
   </div>
 
+  <!-- DRIVE -->
   <div class="form-row">
     <div class="form-group">
-      <label class="form-label">Brand Voice & Notes</label>
-      <textarea class="form-textarea" id="ac-notes" placeholder="Tone, audience, color palette, dos and don'ts..."></textarea>
+      <label class="form-label">Drive Link</label>
+      <input type="text" class="form-input" id="client-drive" placeholder="Paste Google Drive link">
     </div>
   </div>
 
-  <div class="modal-footer">
-    <button class="btn" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="addClient()">Add Client</button>
-  </div>`;
+  <!-- DETAILS -->
+  <div class="form-row">
+    <div class="form-group">
+      <label class="form-label">More Details</label>
+      <textarea class="form-input" id="client-details" placeholder="Extra notes, requirements, strategy..."></textarea>
+    </div>
+  </div>
+
+  <!-- FOOTER (UPDATED 🔥) -->
+  <div class="modal-footer" style="display:flex;justify-content:space-between;gap:10px;">
+
+    <!-- DELETE BUTTON -->
+    <button class="btn btn-danger" id="delete-client-btn" style="display:none;" onclick="deleteClientFromModal()">
+      🗑 Delete
+    </button>
+
+    <!-- RIGHT SIDE -->
+    <div style="margin-left:auto;display:flex;gap:10px;">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="save-client-btn" onclick="addClient()">Add Client</button>
+    </div>
+
+  </div>
+  `;
 }
 
 function addClient() {
   const name = document.getElementById('ac-name')?.value;
-  if (!name) { showToast('⚠','Please enter a client name'); return; }
-  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-  const colors = ['#a78bfa','#34d399','#fbbf24','#f87171','#38bdf8','#fb923c'];
-  const bgs = ['rgba(124,92,252,0.22)','rgba(6,214,160,0.18)','rgba(255,209,102,0.18)','rgba(239,71,111,0.18)','rgba(56,189,248,0.18)','rgba(251,146,60,0.18)'];
-  const idx = DB.clients.length % colors.length;
-  const newClient = {
-    id: name.toLowerCase().replace(/\s+/g,'_') + '_' + Date.now(),
-    name, initials,
-    color: colors[idx], bg: bgs[idx],
-    status: 'Active',
-    platform: 'Instagram',
-    retainer: parseInt(document.getElementById('ac-retainer')?.value || '0'),
-  };
-  DB.clients.push(newClient);
+  if (!name) {
+    showToast('⚠','Enter client name');
+    return;
+  }
+
+  const status = document.getElementById('client-status')?.value || 'Active';
+  const drive = document.getElementById('client-drive')?.value || '';
+  const details = document.getElementById('client-details')?.value || '';
+
+  if (editingClientId) {
+    const c = DB.clients.find(x => x.id === editingClientId);
+    if (c) {
+      c.name = name;
+      c.status = status;
+      c.drive = drive;
+      c.details = details;
+    }
+
+    showToast('✏','Client updated');
+  } else {
+    const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+    DB.clients.push({
+      id: name.toLowerCase().replace(/\s+/g,'_') + '_' + Date.now(),
+      name,
+      initials,
+      color: '#a78bfa',
+      bg: 'rgba(124,92,252,0.22)',
+      status,
+      platform: 'Instagram',
+      drive,
+      details
+    });
+
+    showToast('✓', name + ' added');
+  }
+
+  editingClientId = null;
   saveDB();
   closeModal();
   renderClientList();
-  showToast('✓', `${name} added! Portal link generated.`);
+}
+
+function openEditClient(id) {
+  const c = DB.clients.find(x => x.id === id);
+  if (!c) return;
+
+  editingClientId = id;
+
+  openModal('addClient');
+
+  setTimeout(() => {
+    document.getElementById('ac-name').value = c.name;
+    document.getElementById('client-status').value = c.status;
+    document.getElementById('client-drive').value = c.drive || '';
+    document.getElementById('client-details').value = c.details || '';
+
+    document.getElementById('save-client-btn').textContent = "Update Client";
+    document.getElementById('delete-client-btn').style.display = "block";
+  }, 100);
 }
 
 /* ─── ADD BASIC TASK MODAL (from Team board) ─── */
