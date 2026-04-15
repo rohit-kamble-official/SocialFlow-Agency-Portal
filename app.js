@@ -6,8 +6,8 @@
 
 /* ─── USERS (Simple Login — No Backend) ─── */
 const USERS = [
-  { id: 'tejas', name: 'Tejas Patil',  role: 'Agency Owner',   initials: 'TP', color: '#a78bfa' },
-  { id: 'rohit', name: 'Rohit Sharma', role: 'Content Manager',initials: 'RS', color: '#34d399' },
+  { id: 'tejas', name: 'Tejas Sakore',  role: 'Agency Owner',   initials: 'TP', color: '#a78bfa' },
+  { id: 'rohit', name: 'Rohit Kamble', role: 'Content Manager',initials: 'RS', color: '#34d399' },
   { id: 'ravi',  name: 'Ravi D.',      role: 'Graphic Designer',initials: 'RD', color: '#fbbf24' },
   { id: 'arjun', name: 'Arjun M.',     role: 'Video Editor',   initials: 'AM', color: '#c084fc' },
 ];
@@ -185,20 +185,20 @@ function updateUserUI() {
   if (pAvatar) { pAvatar.textContent = u.initials; pAvatar.style.background = u.color + '33'; pAvatar.style.color = u.color; }
 }
 
-/** Inject Task Manager nav item if not already in DOM */
-function ensureTaskManagerNav() {
-  if (!document.querySelector('[data-view="taskmanager"]')) {
-    const workspaceNav = document.querySelectorAll('.nav-section')[2];
-    if (workspaceNav) {
-      const item = document.createElement('div');
-      item.className = 'nav-item';
-      item.dataset.view = 'taskmanager';
-      item.onclick = () => setView('taskmanager', item);
-      item.innerHTML = '<span class="nav-icon">✅</span><span class="nav-text">Task Manager</span><span class="nav-badge nav-text" id="task-badge" style="background:rgba(168,85,247,0.3);color:#a855f7"></span>';
-      workspaceNav.insertBefore(item, workspaceNav.children[1]);
-    }
-  }
-}
+// /** Inject Task Manager nav item if not already in DOM */
+// function ensureTaskManagerNav() {
+//   if (!document.querySelector('[data-view="taskmanager"]')) {
+//     const workspaceNav = document.querySelectorAll('.nav-section')[1];
+//     if (workspaceNav) {
+//       const item = document.createElement('div');
+//       item.className = 'nav-item';
+//       item.dataset.view = 'taskmanager';
+//       item.onclick = () => setView('taskmanager', item);
+//       item.innerHTML = '<span class="nav-icon">✅</span><span class="nav-text">Task Manager</span><span class="nav-badge nav-text" id="task-badge" style="background:rgba(168,85,247,0.3);color:#a855f7"></span>';
+//       workspaceNav.insertBefore(item, workspaceNav.children[1]);
+//     }
+//   }
+// }
 
 /* ══════════════════════════════════════════════════
    SIDEBAR
