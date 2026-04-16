@@ -1292,3 +1292,15 @@ body {
   transform: rotate(180deg);
   transition: 0.3s;
 }
+
+
+.agency-fixed-name {
+  padding: 8px 12px;
+  background: rgba(124,92,252,0.1);
+  border: 1px solid rgba(124,92,252,0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  width: fit-content;
+}
