@@ -28,6 +28,19 @@ let state = {
 };
 let editingClientId = null;
 
+
+const POST_STATUSES = [
+  'Published',
+  'Scheduled',
+  'Approved',
+  'Not Approved',
+  'Not Started',
+  'NA',
+  'Copy Approved',
+  'Copy Not Approved'
+];
+
+
 /* ═══════════════════════════════════════════════
    INIT
    ═══════════════════════════════════════════════ */
@@ -373,17 +386,24 @@ function renderPostCard(p, opts = {}) {
       🚦 STATUS
     </div>
 
-    <div style="display:flex;gap:6px">
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
 
-      <!-- STATUS BADGE -->
-      <div class="status-pill ${p.status.toLowerCase()}">
-        ${p.status}
-      </div>
-
-      <!-- PLATFORM -->
-      <div class="status-pill gray">
-        ${p.format}
-      </div>
+      ${[
+        'Published',
+        'Scheduled',
+        'Approved',
+        'Not Approved',
+        'Not Started',
+        'NA',
+        'Copy Approved',
+        'Copy Not Approved'
+      ].map(s => `
+        <button 
+          class="status-btn ${p.status === s ? 'active' : ''}" 
+          onclick="event.stopPropagation(); updatePostStatus(${p.id}, '${s}')">
+          ${s}
+        </button>
+      `).join('')}
 
     </div>
 
@@ -416,12 +436,7 @@ function renderPostCard(p, opts = {}) {
 
     <div class="post-expand ${isExpanded ? 'open' : ''}" id="exp-${p.id}">
       <div class="expand-inner">
-        ${(p.approval === 'Awaiting Approval' || p.approval === 'Pending Review') ? `
-        <div class="approval-alert">
-          <span style="font-size:18px">⏳</span>
-          <div class="approval-alert-text">Awaiting client approval. Share the client portal link for them to review.</div>
-          <button class="btn btn-warning btn-sm" onclick="sendForApproval(${p.id})">Send for Approval</button>
-        </div>` : ''}
+       
 
         <div class="expand-grid">
           <div class="expand-block">
@@ -1822,7 +1837,7 @@ function buildEditPostModal(id) {
     <div class="form-group">
       <label class="form-label">Status</label>
       <select class="form-select" id="e-status">
-        ${['Published','Pending','Scheduled','Draft'].map(s => `<option ${s===p.status?'selected':''}>${s}</option>`).join('')}
+        ${['Published','Scheduled','Approved','Not Approved' , 'Not started' ,'NA' ,'Copy Approved','Copy Not Approved'].map(s => `<option ${s===p.status?'selected':''}>${s}</option>`).join('')}
       </select>
     </div>
     <div class="form-group">
@@ -2111,6 +2126,22 @@ function addTask() {
   showToast('✓', 'Task added & team notified!');
   renderView();
 }
+
+
+function updatePostStatus(id, newStatus) {
+  const post = DB.posts.find(p => p.id === id);
+  if (!post) return;
+
+  post.status = newStatus;
+
+  saveDB();
+  renderView();
+
+  showToast('🚦', 'Status: ' + newStatus);
+}
+
+
+
 
 /* ─── FULL TASK MODAL (from Task Manager) ─── */
 function buildAddFullTaskModal() {
