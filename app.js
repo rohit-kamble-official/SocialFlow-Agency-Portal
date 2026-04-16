@@ -367,17 +367,26 @@ function renderPostCard(p, opts = {}) {
 
   // Quick-action team buttons
   const quickActions = `
-  <div class="quick-actions">
-    <div style="font-size:10px;color:var(--text3);margin-bottom:5px;font-weight:600">⚡ QUICK ASSIGN</div>
-    <div style="display:flex;flex-wrap:wrap;gap:5px">
-      ${DB.team.slice(0,4).map(t => `
-      <button class="btn btn-sm quick-btn" title="Assign Reel to ${t.name}" onclick="event.stopPropagation();quickAssign(${p.id},'${t.id}','Reel')">
-        Reel → ${t.initials}
-      </button>
-      <button class="btn btn-sm quick-btn" title="Assign Poster to ${t.name}" onclick="event.stopPropagation();quickAssign(${p.id},'${t.id}','Poster')">
-        Poster → ${t.initials}
-      </button>`).slice(0,4).join('')}
+  <div class="status-box">
+
+    <div style="font-size:10px;color:var(--text3);margin-bottom:6px;font-weight:600">
+      🚦 STATUS
     </div>
+
+    <div style="display:flex;gap:6px">
+
+      <!-- STATUS BADGE -->
+      <div class="status-pill ${p.status.toLowerCase()}">
+        ${p.status}
+      </div>
+
+      <!-- PLATFORM -->
+      <div class="status-pill gray">
+        ${p.format}
+      </div>
+
+    </div>
+
   </div>`;
 
   return `
@@ -1720,12 +1729,10 @@ function buildAddPostModal() {
         ${['Brand Awareness','Lead Generation','Reach + Sales','Trust Building','Virality','Emotional Connect','Objection Handling'].map(o => `<option>${o}</option>`).join('')}
       </select>
     </div>
-    <div class="form-group">
-      <label class="form-label">Assign To</label>
-      <select class="form-select" id="f-assignto">
-        ${DB.team.map(t => `<option>${t.name} (${t.role})</option>`).join('')}
-      </select>
-    </div>
+   <div class="form-group">
+  <label class="form-label">Assign To</label>
+  <input type="text" class="form-input" id="f-assignto" placeholder="Enter team member name (e.g. Rohit)">
+</div>
   </div>
 
   <div class="form-row">
@@ -1753,7 +1760,7 @@ function buildAddPostModal() {
     <div class="form-group">
       <label class="form-label">Platforms</label>
       <div class="platform-checks">
-        ${['Instagram','LinkedIn','TikTok','Twitter/X','YouTube','Facebook'].map(p =>
+        ${['Instagram','Facebook','YouTube','Linkedin','Threads','Twitter/X' ,'Pinterest'].map(p =>
           `<label class="platform-check-item"><input type="checkbox" ${p==='Instagram'?'checked':''} value="${p}"> ${p}</label>`
         ).join('')}
       </div>
@@ -1921,7 +1928,7 @@ function buildAddClientModal() {
   <div class="form-row form-row-cols c2">
     <div class="form-group">
       <label class="form-label">Contact Name</label>
-      <input type="text" class="form-input" id="ac-contact" placeholder="e.g. Rahul Sharma">
+      <input type="text" class="form-input" id="ac-contact" placeholder="e.g. Rohit Kamble">
     </div>
     <div class="form-group">
       <label class="form-label">WhatsApp Number</label>
@@ -1938,12 +1945,10 @@ function buildAddClientModal() {
   </div>
 
   <!-- ROW 4 -->
-  <div class="form-row form-row-cols c2">
-    <div class="form-group">
-      <label class="form-label">Monthly Posts Target</label>
-      <input type="number" class="form-input" id="ac-posts" placeholder="e.g. 20">
-    </div>
-
+<div class="form-group">
+  <label class="form-label">Monthly Posts Plan</label>
+  <input type="text" class="form-input" id="ac-posts" placeholder="e.g. 20 posts, 10 reels, 10 creatives">
+</div>
     <div class="form-group">
       <label class="form-label">Client Status</label>
       <select class="form-select" id="client-status">
@@ -2346,18 +2351,9 @@ function renderInsightsWidget() {
 
   // Generate dynamic insights from live data
   const tips = [];
-  if (pending > 0) tips.push(`${pending} post${pending > 1 ? 's' : ''} still need attention — review and schedule them.`);
-  if (reels < carousels) tips.push(`Reels are outperforming carousels in reach. Try adding ${Math.max(1, carousels - reels)} more Reels this week.`);
-  if (avgReach > 3000) tips.push(`Average reach of ${fmtNum(avgReach)} is above your baseline — keep up the posting frequency!`);
-  if (openTasks > 0) tips.push(`${openTasks} open task${openTasks > 1 ? 's' : ''} assigned to the team — follow up to avoid delays.`);
-  if (tips.length === 0) tips.push('All posts are on track. Great workflow this week! 🎉');
-  if (tips.length < 3) tips.push('Festival content performs 2× better — check the April Festivals list and plan ahead.');
-
+  
   return `
-  <div class="insights-card">
-    <div class="insights-header">
-      <div class="insights-badge">✦ Smart Insights</div>
-    </div>
+ 
     <div class="insights-list">
       ${tips.slice(0, 3).map(tip => `
       <div class="insight-item">
