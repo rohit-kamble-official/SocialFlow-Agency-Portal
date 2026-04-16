@@ -26,8 +26,9 @@ let state = {
   taskFilter: { who: 'all', status: 'all', type: 'all' },
   currentUser: null,
 };
-let editingClientId = null;
 
+let editingClientId = null;
+state.selectedMonth = 'all';
 
 const POST_STATUSES = [
   'Published',
@@ -39,6 +40,16 @@ const POST_STATUSES = [
   'Copy Approved',
   'Copy Not Approved'
 ];
+
+
+if (!state.calendarDate) {
+  state.calendarDate = new Date();
+}
+
+function setMonth(month) {
+  state.selectedMonth = month;
+  renderView();
+}
 
 
 /* ═══════════════════════════════════════════════
@@ -175,14 +186,17 @@ function bootApp() {
   ensureTaskManagerNav();
 
   // Click outside closes panels
-  document.addEventListener('click', (e) => {
-    if (!e.target.closest('.float-panel') && !e.target.closest('.icon-btn') && !e.target.closest('.avatar-btn')) {
-      closePanel();
-    }
-    if (!e.target.closest('.search-input') && !e.target.closest('.search-overlay')) {
-      hideSearch();
-    }
-  });
+document.addEventListener('click', (e) => {
+
+  // 🚫 IGNORE SIDEBAR & MENU BUTTON
+  if (
+    e.target.closest('#sidebar') ||
+    e.target.closest('.mobile-menu-btn')
+  ) return;
+
+  closeSidebarMobile(); // only close when clicking outside
+
+});
 }
 
 /** Update topbar and profile panel with logged-in user info */
@@ -219,25 +233,44 @@ function updateUserUI() {
 /* ══════════════════════════════════════════════════
    SIDEBAR
 ══════════════════════════════════════════════════ */
-function toggleSidebar() {
+function toggleSidebar(e) {
+  if (e) e.stopPropagation();
+
   const sb = document.getElementById('sidebar');
+ const icon = document.getElementById('collapseIcon');
+
+if (icon) {
+  icon.innerText = state.sidebarCollapsed ? '▶' : '◀';
+}
+
   if (window.innerWidth <= 768) {
     const isOpen = sb.classList.toggle('mobile-open');
-    // manage backdrop
+
     let backdrop = document.getElementById('sidebar-backdrop');
     if (!backdrop) {
       backdrop = document.createElement('div');
       backdrop.id = 'sidebar-backdrop';
       backdrop.className = 'sidebar-backdrop';
-      backdrop.onclick = () => closeSidebarMobile();
+
+      backdrop.onclick = (e) => {
+        e.stopPropagation();
+        closeSidebarMobile();
+      };
+
       document.body.appendChild(backdrop);
     }
+
     backdrop.classList.toggle('visible', isOpen);
+
   } else {
     state.sidebarCollapsed = !state.sidebarCollapsed;
+
     sb.classList.toggle('collapsed', state.sidebarCollapsed);
-    const collapseBtn = document.getElementById('collapseBtn');
-    if (collapseBtn) collapseBtn.title = state.sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
+
+    // 🔥 CHANGE ICON
+    if (icon) {
+      icon.innerText = state.sidebarCollapsed ? '▶' : '◀';
+    }
   }
 }
 
@@ -345,7 +378,7 @@ function renderView() {
     `;
   } else {
     topbarLeft.innerHTML = `
-      <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+      <button class="mobile-menu-btn" onclick="toggleSidebar(event)">☰</button>
       <div>
         <div class="topbar-title" id="page-title">Dashboard</div>
         <div class="topbar-sub" id="page-sub">April 2026 · Week 1–2</div>
@@ -393,7 +426,10 @@ function fmtNum(n) {
 
 function getFestivalMap() {
   const m = {};
-  DB.festivals.forEach(f => m[f.day] = f.name);
+  DB.festivals.forEach(f => {
+    const day = parseInt(f.date.replace('Apr ', ''));
+    m[day] = f.name;
+  });
   return m;
 }
 
@@ -454,7 +490,7 @@ function renderPostCard(p, opts = {}) {
           ${formatChip(p.format)}
           ${p.festival ? chip('🎉 ' + p.festival, 'chip-orange') : ''}
           ${chip('⏰ ' + p.time, 'chip-gray')}
-          ${hasReach ? chip('👁 ' + fmtNum(p.reach) + ' reach', 'chip-blue') : ''}
+       
         </div>
         <div class="post-title">${p.title}</div>
         <div class="post-hook">${p.hook}</div>
@@ -481,12 +517,7 @@ function renderPostCard(p, opts = {}) {
           </div>
         </div>
 
-        ${hasReach ? `
-        <div class="perf-mini" style="margin-bottom:12px">
-          <div class="perf-mini-item"><div class="perf-mini-val" style="color:var(--accent2)">${fmtNum(p.reach)}</div><div class="perf-mini-lbl">Reach</div></div>
-          <div class="perf-mini-item"><div class="perf-mini-val" style="color:var(--a3)">${p.saves}</div><div class="perf-mini-lbl">Saves</div></div>
-          <div class="perf-mini-item"><div class="perf-mini-val" style="color:var(--a6)">${p.shares}</div><div class="perf-mini-lbl">Shares</div></div>
-        </div>` : ''}
+      
 
         ${quickActions}
 
@@ -630,9 +661,25 @@ function renderDashboard() {
   const totalSaves = cp.reduce((a, p) => a + p.saves, 0);
   const cl = DB.clients.find(x => x.id === state.client);
 
-  const filteredPosts = state.filterStatus === 'all' ? cp :
-    cp.filter(p => p.status.toLowerCase() === state.filterStatus);
+let filteredPosts = cp;
 
+// STATUS FILTER
+if (state.filterStatus !== 'all') {
+  filteredPosts = filteredPosts.filter(p =>
+    p.status.toLowerCase() === state.filterStatus
+  );
+}
+
+// MONTH FILTER (REAL FIX)
+if (state.selectedMonth !== 'all') {
+  filteredPosts = filteredPosts.filter(p => {
+    const m = new Date(p.date)
+      .toLocaleString('en', { month: 'short' })
+      .toLowerCase();
+
+    return m === state.selectedMonth;
+  });
+}
   return `
   <div class="stats-grid">
     <div class="stat-card">
@@ -675,14 +722,18 @@ function renderDashboard() {
 
     <!-- LEFT SIDE -->
     <div>
-      <div class="section-header">
-        <div class="section-title">Content Plan — ${cl ? cl.name : ''}</div>
-        <div style="display:flex;gap:5px">
-          ${['all','published','pending','scheduled'].map(f =>
-            `<span class="chip ${state.filterStatus===f?'chip-purple':'chip-gray'}" style="cursor:pointer" onclick="setFilter('${f}')">${f.charAt(0).toUpperCase()+f.slice(1)}</span>`
-          ).join('')}
-        </div>
-      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+
+  ${['all','jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].map(m => `
+    <span 
+      class="chip ${state.selectedMonth===m?'chip-purple':'chip-gray'}"
+      style="cursor:pointer"
+      onclick="setMonth('${m}')">
+      ${m === 'all' ? 'All' : m.toUpperCase()}
+    </span>
+  `).join('')}
+
+</div>
 
       <div class="posts-list">
         ${filteredPosts.length 
@@ -695,17 +746,32 @@ function renderDashboard() {
     <div>
 
       <!-- FESTIVALS -->
-      <div class="card" style="margin-bottom:10px;padding:14px">
-        <div class="stat-label" style="margin-bottom:10px">🗓 April Festivals</div>
-        ${DB.festivals.map(f => `
-        <div class="info-row">
-          <span style="display:flex;align-items:center;gap:7px">
-            <span style="width:6px;height:6px;border-radius:50%;background:var(--a4);display:inline-block;"></span>
-            <span style="color:var(--text3);font-size:10px;width:44px;">${f.date}</span>
-            <span style="font-size:11px">${f.name}</span>
-          </span>
-        </div>`).join('')}
-      </div>
+     <!-- FESTIVALS -->
+<div class="card" style="margin-bottom:10px;padding:14px">
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <div class="stat-label">🗓 Festivals</div>
+    <button class="btn btn-sm" onclick="openAddFestival()">+ Add</button>
+  </div>
+
+  ${DB.festivals.map((f, i) => `
+    <div class="info-row" style="justify-content:space-between">
+
+      <span style="display:flex;align-items:center;gap:7px">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--a4);display:inline-block;"></span>
+        <span style="color:var(--text3);font-size:10px;width:44px;">${f.date}</span>
+        <span style="font-size:11px">${f.name}</span>
+      </span>
+
+      <span style="display:flex;gap:6px">
+        <button class="btn btn-xs" onclick="openEditFestival(${i})">✏</button>
+        <button class="btn btn-xs" onclick="deleteFestival(${i})">🗑</button>
+      </span>
+
+    </div>
+  `).join('')}
+
+</div>
 
       <!-- 🔥 MONTHLY REPORT -->
       <div class="card" style="padding:14px;margin-bottom:10px">
@@ -716,9 +782,9 @@ function renderDashboard() {
           ['Published', pub, 'var(--a3)'],
           ['Reels', cp.filter(p=>p.format==='Reel').length, 'var(--a5)'],
           ['Carousels', cp.filter(p=>p.format==='Carousel').length, 'var(--accent2)'],
-          ['Total Reach', fmtNum(totalReach), 'var(--a7)'],
-          ['Total Saves', totalSaves, 'var(--a3)'],
-          ['Total Shares', cp.reduce((a,p)=>a+p.shares,0), 'var(--a6)']
+          // ['Total Reach', fmtNum(totalReach), 'var(--a7)'],
+          // ['Total Saves', totalSaves, 'var(--a3)'],
+          // ['Total Shares', cp.reduce((a,p)=>a+p.shares,0), 'var(--a6)']
         ].map(([l,v,c]) => `
           <div class="info-row">
             <span class="info-row-label">${l}</span>
@@ -751,58 +817,113 @@ function setFilter(f) {
 ══════════════════════════════════════════════════ */
 function renderCalendar() {
   const cp = clientPosts();
+
+  const d = state.calendarDate;
+  const year = d.getFullYear();
+  const month = d.getMonth();
+
+  const monthName = d.toLocaleString('en', { month: 'long' });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const totalDays = new Date(year, month + 1, 0).getDate();
+
+  const today = new Date();
+
+  // 🧠 FILTER POSTS BY MONTH
   const postMap = {};
   cp.forEach(p => {
-    const d = new Date(p.date).getDate();
-    if (!postMap[d]) postMap[d] = [];
-    postMap[d].push(p);
+    const pd = new Date(p.date);
+
+    if (pd.getMonth() === month && pd.getFullYear() === year) {
+      const day = pd.getDate();
+      if (!postMap[day]) postMap[day] = [];
+      postMap[day].push(p);
+    }
   });
+
   const festMap = getFestivalMap();
-  const fmtCls = { Carousel:'cal-ev-carousel', Reel:'cal-ev-reel', Story:'cal-ev-story', Static:'cal-ev-static' };
 
-  let cells = ['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d =>
-    `<div class="cal-day-header">${d}</div>`
-  ).join('');
+  let cells = '';
 
-  for (let i = 0; i < 3; i++) cells += `<div class="cal-day empty"></div>`;
+  // DAY HEADERS
+  cells += ['SUN','MON','TUE','WED','THU','FRI','SAT']
+    .map(d => `<div class="cal-day-header">${d}</div>`).join('');
 
-  for (let d = 1; d <= 30; d++) {
-    const ps = postMap[d] || [];
-    const fest = festMap[d] || '';
-    const dayOfWeek = (d + 2) % 7;
-    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-    const isToday = d === 14;
-
-    cells += `<div class="cal-day${isToday?' today':''}${ps.length?' has-post':''}${isWeekend?' weekend':''}">
-      <div class="cal-day-num${isToday?' today-num':''}">${d}</div>
-      ${ps.map(p => `<div class="cal-event ${fmtCls[p.format]||'cal-ev-static'}" onclick="openModal('viewPost',${p.id})" title="${p.title}">${p.format[0]}·${p.title.slice(0,12)}</div>`).join('')}
-      ${fest ? `<div class="cal-festival">✨${fest.slice(0,14)}</div>` : ''}
-    </div>`;
+  // EMPTY CELLS
+  for (let i = 0; i < firstDay; i++) {
+    cells += `<div class="cal-day empty"></div>`;
   }
 
+  // REAL DAYS
+  for (let day = 1; day <= totalDays; day++) {
+
+    const ps = postMap[day] || [];
+    const fest = festMap[day] || '';
+
+    const isToday =
+      day === today.getDate() &&
+      month === today.getMonth() &&
+      year === today.getFullYear();
+
+    cells += `
+      <div class="cal-day ${isToday ? 'today' : ''}">
+        <div class="cal-day-num">${day}</div>
+
+        ${ps.map(p => `
+          <div class="cal-event"
+            onclick="openModal('viewPost',${p.id})">
+            ${p.format[0]} · ${p.title.slice(0,12)}
+          </div>
+        `).join('')}
+
+        ${fest ? `<div class="cal-festival">✨ ${fest}</div>` : ''}
+      </div>
+    `;
+  }
+
+  // HEADER BUTTON LABELS
+  const prevLabel = new Date(year, month - 1).toLocaleString('en', { month: 'short' });
+  const nextLabel = new Date(year, month + 1).toLocaleString('en', { month: 'short' });
+
   return `
-  <div class="cal-nav">
-    <button class="btn" onclick="showToast('◀','March 2026')">← Mar</button>
-    <div class="cal-month-label">April 2026</div>
-    <button class="btn" onclick="showToast('▶','May 2026')">May →</button>
-    <button class="btn btn-primary" style="margin-left:auto" onclick="openModal('addPost')">+ Add Post</button>
-    <button class="btn" onclick="showToast('📅','Calendar exported!')">Export PDF</button>
-  </div>
+    <div class="calendar-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
 
-  <div class="cal-grid">${cells}</div>
+      <button class="btn btn-sm" onclick="prevMonth()">← ${prevLabel}</button>
 
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-    <div class="cal-legend">
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(124,92,252,0.5)"></div>Carousel</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(239,71,111,0.5)"></div>Reel</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(255,209,102,0.5)"></div>Story</div>
-      <div class="cal-legend-item"><div class="cal-legend-dot" style="background:rgba(6,214,160,0.5)"></div>Published</div>
+      <div style="font-weight:600">${monthName} ${year}</div>
+
+      <button class="btn btn-sm" onclick="nextMonth()">${nextLabel} →</button>
+
     </div>
-  </div>
 
-  <div class="section-header"><div class="section-title">All Posts This Period</div></div>
-  <div class="posts-list">${cp.map(p => renderPostCard(p)).join('')}</div>`;
+    <div class="cal-grid">${cells}</div>
+
+    <div class="section-header">
+      <div class="section-title">All Posts This Period</div>
+    </div>
+
+    <div class="posts-list">
+      ${cp
+        .filter(p => {
+          const pd = new Date(p.date);
+          return pd.getMonth() === month && pd.getFullYear() === year;
+        })
+        .map(p => renderPostCard(p))
+        .join('')}
+    </div>
+  `;
 }
+
+function nextMonth() {
+  state.calendarDate.setMonth(state.calendarDate.getMonth() + 1);
+  renderView();
+}
+
+function prevMonth() {
+  state.calendarDate.setMonth(state.calendarDate.getMonth() - 1);
+  renderView();
+}
+
 
 /* ══════════════════════════════════════════════════
    PLANNER
@@ -2426,3 +2547,53 @@ function renderInsightsWidget() {
     </div>
   </div>`;
 }
+
+
+
+
+function openAddFestival() {
+  const date = prompt("Enter date (e.g. Apr 25)");
+  const name = prompt("Enter festival name");
+
+  if (!date || !name) return;
+
+  DB.festivals.push({ date, name });
+
+  saveDB();
+  renderView();
+}
+
+function openEditFestival(index) {
+  const f = DB.festivals[index];
+
+  const date = prompt("Edit date:", f.date);
+  const name = prompt("Edit name:", f.name);
+
+  if (!date || !name) return;
+
+  DB.festivals[index] = { date, name };
+
+  saveDB();
+  renderView();
+}
+
+function deleteFestival(index) {
+  if (!confirm("Delete this festival?")) return;
+
+  DB.festivals.splice(index, 1);
+
+  saveDB();
+  renderView();
+}
+
+
+function setMonth(month) {
+  console.log("Clicked:", month); // debug
+  state.selectedMonth = month;
+  renderView();
+}
+
+document.getElementById('sidebar')?.addEventListener('click', function(e) {
+  e.stopPropagation();
+});
+
