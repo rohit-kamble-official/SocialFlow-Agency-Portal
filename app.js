@@ -1622,7 +1622,10 @@ function renderSettings() {
 
     <div class="settings-card">
       <div class="settings-title">🎨 Agency Branding</div>
-      <div class="setting-row"><div class="setting-label">Agency Name</div><input class="form-input" value="SocialFlow Agency" style="width:150px;font-size:11px"></div>
+     <div class="setting-row">
+  <div class="setting-label">Agency Name</div>
+  <div class="agency-fixed-name">Zonovva Creative Agency</div>
+</div>
       <div class="setting-row"><div class="setting-label">Owner Name</div><input class="form-input" value="${state.currentUser?.name || 'Tejas Patil'}" style="width:150px;font-size:11px"></div>
       <div class="setting-row"><div class="setting-label">WhatsApp Number</div><input class="form-input" value="+91 98765 43210" style="width:150px;font-size:11px"></div>
       <div class="setting-row"><div class="setting-label">Default Post Time</div><input class="form-input" type="time" value="09:00" style="width:100px;font-size:11px"></div>
