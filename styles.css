@@ -121,7 +121,7 @@ body {
   -webkit-font-smoothing: antialiased;
   transition: background 0.3s, color 0.3s;
 }
-
+/* --lgo --*/
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -611,6 +611,55 @@ body {
 .wa-sched-row { display: flex; align-items: center; gap: 10px; font-size: 11px; padding: 8px 0; border-bottom: 1px solid var(--border); }
 .wa-sched-row:last-child { border-bottom: none; }
 .wa-sched-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--accent2); width: 56px; flex-shrink: 0; }
+
+.status-box {
+  margin-top: 8px;
+}
+
+.status-pill {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+/* STATUS COLORS */
+.status-pill.published {
+  background: var(--emerald-bg);
+  color: var(--emerald);
+  border-color: rgba(16,217,160,0.25);
+}
+
+.status-pill.pending {
+  background: var(--amber-bg);
+  color: var(--amber);
+  border-color: rgba(245,200,66,0.25);
+}
+
+.status-pill.scheduled {
+  background: var(--sky-bg);
+  color: var(--sky);
+  border-color: rgba(56,200,240,0.25);
+}
+
+/* SECONDARY */
+.status-pill.gray {
+  background: var(--bg3);
+  color: var(--text3);
+  border-color: var(--border);
+}
+
+
+
+
+
+
+
+
+
+
+
 
 /* ════════════════════════════════════════
    SETTINGS
