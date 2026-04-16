@@ -53,7 +53,9 @@
   <!-- Dark Logo -->
   <img src="logo (1).png" class="logo-img dark-logo">
 
-  <button class="collapse-btn" id="collapseBtn" onclick="toggleSidebar()">◀</button>
+  <button class="sidebar-toggle-btn" onclick="toggleSidebar(event)">
+  <span id="collapseIcon">◀</span>
+</button>
 </div>
       
 
@@ -120,7 +122,7 @@
     <!-- TOPBAR -->
     <header class="topbar">
      <div class="topbar-left" id="topbar-left">
-        <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+       <button class="mobile-menu-btn" onclick="toggleSidebar(event)">☰</button>
         <div>
           <div class="topbar-title" id="page-title">Dashboard</div>
           <div class="topbar-sub" id="page-sub">April 2026 · Week 1–2</div>
