@@ -1605,20 +1605,7 @@ function renderSettings() {
       </div>`).join('')}
     </div>
 
-    <div class="settings-card">
-      <div class="settings-title">🤖 WhatsApp Bot</div>
-      ${[
-        ['Auto post reminders','Send 30min before posting time',true],
-        ['Client approval auto-send','Auto-send approval request',true],
-        ['Performance reports','Weekly analytics via WhatsApp',false],
-        ['Team notifications','Notify team when task pending',true],
-        ['Festival reminders','Alert 3 days before festival',true],
-      ].map(([l,s,on]) => `
-      <div class="setting-row">
-        <div><div class="setting-label">${l}</div><div class="setting-sublabel">${s}</div></div>
-        <div class="toggle ${on ? 'on' : ''}" onclick="this.classList.toggle('on');showToast('⚙','Saved!')"></div>
-      </div>`).join('')}
-    </div>
+  
 
     <div class="settings-card">
       <div class="settings-title">🎨 Agency Branding</div>
@@ -1634,40 +1621,7 @@ function renderSettings() {
       </div>
     </div>
 
-    <!-- DATA MANAGEMENT — Export / Import -->
-    <div class="settings-card">
-      <div class="settings-title">💾 Data Management</div>
-      <div style="font-size:11px;color:var(--text3);margin-bottom:14px;line-height:1.6">
-        All data is stored locally in your browser. Export regularly as a backup. Import to restore on another device.
-      </div>
-
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Export All Data</div>
-          <div class="setting-sublabel">Download full backup as JSON — posts, tasks, clients</div>
-        </div>
-        <button class="btn btn-success btn-sm" onclick="exportData()">⬇ Export JSON</button>
-      </div>
-
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Import Data</div>
-          <div class="setting-sublabel">Restore from a previous JSON backup file</div>
-        </div>
-        <label class="btn btn-sm" style="cursor:pointer">
-          ⬆ Import JSON
-          <input type="file" accept=".json" style="display:none" onchange="importData(this.files[0])">
-        </label>
-      </div>
-
-      <div class="setting-row" style="border:none;padding-top:12px">
-        <div>
-          <div class="setting-label" style="color:var(--a5)">Reset All Data</div>
-          <div class="setting-sublabel">Delete everything and restore defaults</div>
-        </div>
-        <button class="btn btn-danger btn-sm" onclick="resetData()">🗑 Reset</button>
-      </div>
-    </div>
+   
 
     <div class="settings-card">
       <div class="settings-title">🔗 Integrations</div>
