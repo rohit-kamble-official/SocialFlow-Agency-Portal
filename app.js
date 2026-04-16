@@ -11,7 +11,7 @@ const USERS = [
   { id: 'ravi',  name: 'Ravi D.',      role: 'Graphic Designer',initials: 'RD', color: '#fbbf24' },
   { id: 'arjun', name: 'Arjun M.',     role: 'Video Editor',   initials: 'AM', color: '#c084fc' },
 ];
-const SHARED_PASSWORD = 'Zonovva@1216';
+const SHARED_PASSWORD = 'socialflow2026';
 const LS_USER_KEY = 'socialflow_user';
 
 /* ─── APP STATE ─── */
@@ -86,71 +86,73 @@ function autoMarkPublished() {
    ═══════════════════════════════════════════════ */
 function showLoginScreen() {
   document.getElementById('app').style.display = 'none';
+
   let loginEl = document.getElementById('login-screen');
   if (!loginEl) {
     loginEl = document.createElement('div');
     loginEl.id = 'login-screen';
     document.body.appendChild(loginEl);
   }
+
   loginEl.innerHTML = `
   <div class="login-bg">
     <div class="login-card">
-      <div class="login-logo">
-        <div class="logo-icon" style="width:48px;height:48px;font-size:18px;border-radius:14px">ZC</div>
-        <div>
-          <div class="logo-text" style="font-size:22px">SOCIALFLOW</div>
-          <div class="logo-sub" style="font-size:11px">Agency Portal — Zonovva Creative</div>
-        </div>
-      </div>
-      <div class="login-title">Welcome back 👋</div>
-      <div class="login-sub">Sign in to continue to your agency dashboard</div>
 
-      <div class="form-group" style="margin-bottom:14px">
-        <label class="form-label">Select User</label>
-        <select class="form-select" id="login-user" style="font-size:14px;padding:10px 14px">
-          ${USERS.map(u => `<option value="${u.id}">${u.name} — ${u.role}</option>`).join('')}
-        </select>
+      <!-- LOGO -->
+      <div class="LOGO FOR Light.png" style="justify-content:center">
+        <img src="logo (1).png" style="height:45px">
       </div>
 
-      <div class="form-group" style="margin-bottom:20px">
-        <label class="form-label">Password</label>
-        <input type="password" class="form-input" id="login-pass" placeholder="Enter agency password"
+      <!-- TITLE -->
+    
+
+      <!-- PASSWORD ONLY -->
+      <div class="form-group" style="margin-bottom:20px;margin-top:15px">
+        <input 
+          type="password" 
+          class="form-input" 
+          id="login-pass" 
+          placeholder="Enter password"
           style="font-size:14px;padding:10px 14px"
           onkeydown="if(event.key==='Enter')doLogin()">
       </div>
 
+      <!-- BUTTON -->
       <button class="btn btn-primary btn-full" style="padding:12px;font-size:14px" onclick="doLogin()">
-        Sign In →
+        Enter →
       </button>
 
+      <!-- ERROR -->
       <div id="login-error" style="color:var(--a5);font-size:12px;margin-top:10px;text-align:center;display:none">
-        ⚠ Incorrect password. Please try again.
+        ⚠ Incorrect password
       </div>
 
-      <div style="margin-top:20px;text-align:center;color:var(--text3);font-size:11px">
-        Single shared password for all team members
-      </div>
     </div>
   </div>`;
+
   loginEl.style.display = 'flex';
   setTimeout(() => document.getElementById('login-pass')?.focus(), 100);
 }
 
 function doLogin() {
-  const userId = document.getElementById('login-user')?.value;
   const pass = document.getElementById('login-pass')?.value;
+
   if (pass !== SHARED_PASSWORD) {
     const err = document.getElementById('login-error');
-    if (err) { err.style.display = 'block'; }
+    if (err) err.style.display = 'block';
     document.getElementById('login-pass').value = '';
     return;
   }
-  const user = USERS.find(u => u.id === userId);
-  if (!user) return;
+
+  // Default user (since no dropdown now)
+  const user = USERS[0];
+
   state.currentUser = user;
   localStorage.setItem(LS_USER_KEY, JSON.stringify(user));
+
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'flex';
+
   bootApp();
 }
 
@@ -310,6 +312,8 @@ function setView(view, el) {
 
 function renderView() {
   const el = document.getElementById('content-inner');
+  const topbarLeft = document.getElementById('topbar-left');
+
   const views = {
     dashboard:    renderDashboard,
     calendar:     renderCalendar,
@@ -324,7 +328,35 @@ function renderView() {
     clientportal: renderClientPortal,
     settings:     renderSettings,
   };
+
+  // 🎯 RENDER CONTENT
   el.innerHTML = (views[state.view] || renderDashboard)();
+
+  // 🔥 HANDLE BACK BUTTON
+  if (state.view === 'viewPost') {
+    topbarLeft.innerHTML = `
+      <button class="btn btn-sm" onclick="goBack()" style="margin-right:10px">
+        ← Back
+      </button>
+      <div>
+        <div class="topbar-title">Post Details</div>
+        <div class="topbar-sub">Return to dashboard</div>
+      </div>
+    `;
+  } else {
+    topbarLeft.innerHTML = `
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+      <div>
+        <div class="topbar-title" id="page-title">Dashboard</div>
+        <div class="topbar-sub" id="page-sub">April 2026 · Week 1–2</div>
+      </div>
+    `;
+  }
+}
+
+function goBack() {
+  state.view = 'dashboard';
+  renderView();
 }
 
 /* ══════════════════════════════════════════════════
@@ -410,7 +442,7 @@ function renderPostCard(p, opts = {}) {
   </div>`;
 
   return `
-  <div class="post-card" id="pc-${p.id}">
+ <div class="post-card" onclick="openPost(${p.id})" style="cursor:pointer">
     <div class="post-header" onclick="togglePost(${p.id})">
       <div class="post-date-box">
         <div class="post-day">${p.day}</div>
