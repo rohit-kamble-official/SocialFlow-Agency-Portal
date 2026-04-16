@@ -671,6 +671,14 @@ body {
   font-weight: 600;
 }
 
+
+.btn-xs {
+  font-size: 10px;
+  padding: 3px 6px;
+}
+
+
+
 /* COLORS */
 .status-btn.active:nth-child(1) { background: var(--emerald-bg); color: var(--emerald); }
 .status-btn.active:nth-child(2) { background: var(--sky-bg); color: var(--sky); }
@@ -1217,4 +1225,70 @@ body {
   /* Slightly larger font for legibility on touch */
   body { font-size: 14px; }
   .form-input, .form-select, .form-textarea { font-size: 16px !important; } /* Prevents iOS zoom on focus */
+}
+
+
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 10px;
+}
+
+.cal-cell {
+  min-height: 100px;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.cal-cell:hover {
+  background: var(--bg3);
+}
+
+.cal-date {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+.cal-post {
+  font-size: 10px;
+  background: var(--accent);
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-top: 4px;
+}
+
+.sidebar {
+  transition: all 0.3s ease;
+}
+
+.sidebar-toggle-btn {
+  position: absolute;
+  top: 16px;
+  right: -12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #1e1e2f;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #7c5cff;
+}
+
+.sidebar.collapsed #collapseIcon {
+  transform: rotate(180deg);
+  transition: 0.3s;
 }
