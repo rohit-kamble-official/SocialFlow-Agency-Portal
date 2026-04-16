@@ -651,6 +651,36 @@ body {
 }
 
 
+.status-btn {
+  font-size: 10px;
+  padding: 4px 8px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text3);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.status-btn:hover {
+  background: var(--bg4);
+  color: var(--text);
+}
+
+.status-btn.active {
+  font-weight: 600;
+}
+
+/* COLORS */
+.status-btn.active:nth-child(1) { background: var(--emerald-bg); color: var(--emerald); }
+.status-btn.active:nth-child(2) { background: var(--sky-bg); color: var(--sky); }
+.status-btn.active:nth-child(3) { background: var(--accent-bg); color: var(--accent2); }
+.status-btn.active:nth-child(4) { background: var(--rose-bg); color: var(--rose); }
+.status-btn.active:nth-child(5) { background: var(--amber-bg); color: var(--amber); }
+.status-btn.active:nth-child(6) { background: var(--bg4); color: var(--text2); }
+.status-btn.active:nth-child(7) { background: var(--emerald-bg); color: var(--emerald); }
+.status-btn.active:nth-child(8) { background: var(--rose-bg); color: var(--rose); }
+
 
 
 
