@@ -11,7 +11,7 @@ const USERS = [
   { id: 'ravi',  name: 'Ravi D.',      role: 'Graphic Designer',initials: 'RD', color: '#fbbf24' },
   { id: 'arjun', name: 'Arjun M.',     role: 'Video Editor',   initials: 'AM', color: '#c084fc' },
 ];
-const SHARED_PASSWORD = 'socialflow2026';
+const SHARED_PASSWORD = 'Zonovva@1216';
 const LS_USER_KEY = 'socialflow_user';
 
 /* ─── APP STATE ─── */
